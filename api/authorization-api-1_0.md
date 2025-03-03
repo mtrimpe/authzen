@@ -588,7 +588,7 @@ The following string manipulation expressions are defined:
 - `lower` returns the lowercase version of the string
 - `upper` returns the uppercase version of the string
 
-### Partial Evaluation Decision {#decision}
+### Partial Evaluation Decision 
 The following are two non-normative examples of a partial evaluation decision:
 
 ~~~ json
@@ -621,9 +621,9 @@ The following are two non-normative examples of a partial evaluation decision:
       {
         "endsWith": {
           "value": {
-            "field": "$.context.environment"
+            "field": "$.context.environment",
+            "test": "-development"
           }
-          "test": "-development"
         }
       }
     ]
