@@ -389,7 +389,7 @@ The following is a non-normative example of a Reason Object:
 
 # Partial Evaluation API {#partial-evaluation-api}
 
-The Partial Evaluation API defines the message exchange pattern between a client (PEP) and an authorization service (PDP) for executing a single access evaluation with support for partial evaluation.
+The Partial Evaluation API defines the message exchange pattern between a client (PEP) and an authorization service (PDP) for executing a single access evaluation with support for partial evaluation. A partial evaluation results in residual expressions that the PDP provides to the PEP and which the PEP must be able to evaluate. 
 
 ## The Partial Evaluation API Request {#partial-evaluation-request}
 
@@ -458,6 +458,7 @@ What actions can Alice perform on account 123?
     "type": "user",
     "id": "alice@acmecorp.com"
   },
+
   "resource": {
     "type": "account",
     "id": "123"
@@ -470,91 +471,162 @@ What actions can Alice perform on account 123?
 {: #request-example title="Example without action"}
 
 ## The Partial Evaluation API Response {#partial-evaluation-response}
-The partial evaluation response includes the type of response, residual policy and additional context for the decision.
+The partial evaluation response includes the decision defined as an expression and additional context for the decision.
 
-`type`:
-: REQUIRED. A string value that specifies whether the decision is to fully allow, fully deny, or partially evaluate.
-
-In this specification, assuming the evaluation was successful, there are only 3 possible responses:
-
-- `allow`: The access request is permitted to go forward.
-- `deny`: The access request is denied and MUST NOT be permitted to go forward.
-- `partial`: The access request is permitted to go foward provided the PEP can implement the provided residual policy. If the PEP cannot implement the residual policy the request MUST NOT be permitted to go forward.
-
-`residual`:
-: OPTIONAL. An object containing the residual policy (or filter definitions) to be implemented by the PEP. The residual policy MUST be provided if `type` is `partial`
+`decision`:
+: REQUIRED. An object containing the expressions to be evaluated by the PEP. 
 
 `context`:
-: OPTIONAL. An object containing additional information regarding the decision.
+: OPTIONAL. An object containing additional information regarding the decision. The semantics of this field are identical to the {{access-evaluation-response-context}}.
 
-### Residual / Filter definition
+## Expression definition
 
-The residual policy is described in terms of expressions. An expression consists of a JSON object with a single key containing the type of the expression. The value belonging to the key contains the content of the expression itself.
+Partial evaluation results are described in terms of expressions. An expression consists of a JSON object with a single key and value. The key contains a string value indicating the type of the expression. The value contains the content of the expression to be evaluated.
 
-#### Or Expression
+If the PEP does not recognize an expression type the entire partial evaluation request MUST return the false value. To ensure uniqueness it is strongly recommended that reverse dot notation is used for vendor specific expression types.
 
-The `or` expression contains an array of expressions. It returns `true` if one or more of the given expressions evaluate to `true`.
 
-#### And Expression
+### Logical Expressions
 
-The `and` expression contains an array of expressions. It returns `true` if all of the given expressions evaluate to `true`.
+The logical expressions `anyOf`, `allOf`, `noneOf`, `oneOf` all accept an array of boolean expressions and return a boolean value.
 
-#### Not Expression
+- `anyOf` returns `true` if one or more of the given expressions evaluate to `true`.
+- `allOf` returns `true` if all of the given expressions evaluate to `true`.
+- `noneOf` returns `true` if all of the given expressions evaluate to `false`.
+- `oneOf` returns `true` if exactly one of the given expressions evaluates to `true`.
 
-The `not` expression contains a single expressions. It returns `true` if the given expressions evaluates to `false` and returns `false` if the given expression evaluates to `true`.
+### Field Comparison Expression
 
-#### OneOf Expression
+The `compareField` expression supports the most common case of comparing a given value against a specified field.
 
-The `oneOf` expression contains an array of expressions. It returns `true` if exactly one of the given expressions evaluates to `true` and all other given expressions evaluate to false.
+The expression accepts an object with the following properties:
 
-#### Function Expression
+`field`:
+: REQUIRED. An JSONPath identifier referring to the field to be compared against. A PEP may choose not to support all JSON path functionality. If the PEP does not support a specific field identifier the entire partial evaluation request MUST return the false value. 
 
-The `function` expression consists of an object describing a function to be evaluated. It contains the following fields:
+`value`:
+: REQUIRED. The value to compare.
 
-`name`:
-: REQUIRED. A string value that defines the function to be evaluated.
+`comparison`:
+: REQUIRED. An string value referring to the comparison method. The following comparisons are supported:
+- `eq` if the value must be equal to the field.
+- `ne` if the value must be different to the field.
+- `gt` if the value must be greater than the field.
+- `gte` if the value must be greater than or equal to the field.
+- `lt` if the value must be less than the field.
+- `lte` if the value must be less than or equal to the field.
+- `in` if the value must be one of the values in the field (assuming the field is a collection of values.) 
+- `nin` if the value must not be one of the values in the field (assuming the field is a collection of values.)
+- `contain` if the field must contain the value.
+- `like` if the field must conform to the given SQL like operator. Only `%` and `_` wildcards are supported.
 
-`arguments`:
-: REQUIRED. An array containing the arguments to the function.
+### Value Expression
 
-Any function name can be used but it must be ensure that unique function names are used. It is recommended to use reverse dot notation for vendor specific functions.
+The `value` expression contains a JSON element that the expression will always evaluate to. For example `{ "value": true }` will always evaluate to `true`.
 
-### Partial Evaluation Decision {#decision}
-The following are two non-normative example of a simple Decision:
+### Field Expression
+
+The `field` expression contains a string with a JSONPath identifier. The expression resolves to the value of the field defined by the JSONPath identifier. If the PEP does not support the full JSONPath specification the entire partial evaluation request MUST return the false value. 
+
+### Comparison Expressions
+
+The comparison expressions `eq`, `ne`, `gt`,`gte`,`lt`,`lte` all accept an array of string or numeric values and return a boolean value.
+
+- `eq` returns `true` if all values in the array are equal
+- `ne` returns `true` if all values in the array are different
+- `gt` returns `true` if every value in the array is greater than the next value in the array.
+- `gte` returns `true` if every value in the array is greater than or equal to the next value in the array.
+- `lt` returns `true` if every value in the array is less than the next value in the array.
+- `lte` returns `true` if every value in the array is less than or equal to the next value in the array.
+
+### Membership Expression
+
+The membership expressions return a boolean value and consist of an object with the following properties:
+
+`list`:
+: REQUIRED. A list of values in which to check for membership.
+
+`value`:
+: REQUIRED. The value to check for membership.
+
+The following membership expressions are defined:
+
+- `in` returns `true` if the provided value exists in the list.
+- `nin` returns `true` if the provided value does not exist in the list.
 
 ~~~ json
 {
-  "type": "partial",
-  "residual":
-    {
-      "or": [
-        {
-          "and": [
-            {
-              "function": {
-                "name": "equals",
-                "arguments": [
-                  {
-                    "function": {
-                      "name": "lower",
-                      "arguments": [
-                        {
-                          "value": "username",
-                          "type": "string"
-                        }
-                      ]
-                    }
-                  },
-                  { "value": "John Doe",
-                    "type": "string"
-                  }
-                ]
+  "in": {
+    "list": ["mary", "john", "mike"],
+    "value": "john"
+  }
+}
+~~~
+
+### String Test Expressions
+
+The string test expressions return a boolean value and consist of an object with the following properties :
+
+`value`:
+: REQUIRED. A string values to compare against the provided test value.
+
+`test`:
+: REQUIRED. The value to use for testing the provided string. 
+
+The following string test expressions are defined:
+- `startsWith` returns true if the provided string value starts with the provided test string. 
+- `endsWith` returns true if the provided string value ends with the provided test string. 
+- `regEx` returns true if the provided string value conforms to regular expression provided as the test. 
+- `like` returns true if the provided string value conforms to the provided SQL like patter. Only `%` and `_` wildcards are supported.
+- `contains` returns true if the provided string value contains to the provided test string.
+
+### String Manipulation Expressions
+
+The string manipulation expressions all accept a string value and return a string value
+
+The following string manipulation expressions are defined:
+- `lower` returns the lowercase version of the string
+- `upper` returns the uppercase version of the string
+
+### Partial Evaluation Decision {#decision}
+The following are two non-normative examples of a partial evaluation decision:
+
+~~~ json
+{
+  "decision": {
+    "or": [
+      {
+        "and": [
+          {
+            "eq": [
+              {
+                "lower": {
+                  "field": "$.username"
+                }
+              },
+              {
+                "value": "John Doe"
               }
+            ]
+          },
+          { 
+            "compareField": {
+              "field": "$.tags",
+              "comparison": "nin",
+              "value": "sensitive"
             }
-          ]
+          }
+        ]
+      },
+      {
+        "endsWith": {
+          "value": {
+            "field": "$.context.environment"
+          }
+          "test": "-development"
         }
-      ]
-    }
+      }
+    ]
   }
 }
 ~~~
@@ -563,7 +635,9 @@ The following are two non-normative example of a simple Decision:
 
 ~~~ json
 {
-  "type": "allow"
+  "decision": {
+    "value": true
+  },
   "context": {
     "reason": "Subject is superuser"
   }
@@ -571,9 +645,6 @@ The following are two non-normative example of a simple Decision:
 ~~~
 {: #decision-example title="Example full allow"}
 
-
-### Additional Context in a Response
-The partial evalaution API response may contain a `"context"` field which can be any JSON object.  The semantics of this context field are identical to that of the {{access-evaluation-response-context}}
 
 # Access Evaluations API {#access-evaluations-api}
 
