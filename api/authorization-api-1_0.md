@@ -314,7 +314,7 @@ The following is a non-normative example of a simple Decision:
 ~~~
 {: #decision-example title="Example Decision"}
 
-### Additional Context in a Response
+### Additional Context in a Response {#access-evaluation-response-context}
 In addition to a `"decision"`, a response may contain a `"context"` field which can be any JSON object.  This context can convey additional information that can be used by the PEP as part of the decision evaluation process. Examples include:
 
 - XACML's notion of "advice" and "obligations"
@@ -386,6 +386,194 @@ The following is a non-normative example of a Reason Object:
 }
 ~~~
 {: #response-with-context-example title="Example Response with Context"}
+
+# Partial Evaluation API {#partial-evaluation-api}
+
+The Partial Evaluation API defines the message exchange pattern between a client (PEP) and an authorization service (PDP) for executing a single access evaluation with support for partial evaluation.
+
+## The Partial Evaluation API Request {#partial-evaluation-request}
+
+The Partial Evaluation request is identical to the Access Evaluation Request except that either the identifier of the subject, the action or the identifier of the resource MAY be omitted.
+
+The Partial Evaluation request is a 4-tuple constructed of the four previously defined entities:
+
+`subject`:
+: OPTIONAL. The subject (or principal) of type Subject. The Subject's `identifier` MAY be omitted if the Action's `name` and the Resource's `type` and `identifier` are provided.
+
+`action`:
+: OPTIONAL. The action (or verb) of type Action. Action MAY be omitted if the Subject's `type` and `identifier` and the Resource's `type` and `identifier` are provided.
+
+`resource`:
+: OPTIONAL. The resource of type Resource. The Resource's `identifier` MAY be omitted if the Subject's `type` and `identifier` and the Action's `name` are provided.
+
+`context`:
+: OPTIONAL. The context (or environment) of type Context.
+
+### Examples (non-normative)
+
+What accounts can Alice read?
+~~~ json
+{
+  "subject": {
+    "type": "user",
+    "id": "alice@acmecorp.com"
+  },
+  "action": {
+    "name": "can_read",
+  },
+  "resource": {
+    "type": "account"
+  }
+  "context": {
+    "time": "1985-10-26T01:22-07:00"
+  }
+}
+~~~
+{: #request-example title="Example without resource identifier"}
+
+What users can read account 123?
+~~~ json
+{
+  "subject": {
+    "type": "user"
+  },
+  "action": {
+    "name": "can_read",
+  },
+  "resource": {
+    "type": "account",
+    "id": "123"
+  }
+  "context": {
+    "time": "1985-10-26T01:22-07:00"
+  }
+}
+~~~
+{: #request-example title="Example without subject identifier"}
+
+What actions can Alice perform on account 123?
+~~~ json
+{
+  "subject": {
+    "type": "user",
+    "id": "alice@acmecorp.com"
+  },
+  "resource": {
+    "type": "account",
+    "id": "123"
+  }
+  "context": {
+    "time": "1985-10-26T01:22-07:00"
+  }
+}
+~~~
+{: #request-example title="Example without action"}
+
+## The Partial Evaluation API Response {#partial-evaluation-response}
+The partial evaluation response includes the type of response, residual policy and additional context for the decision.
+
+`type`:
+: REQUIRED. A string value that specifies whether the decision is to fully allow, fully deny, or partially evaluate.
+
+In this specification, assuming the evaluation was successful, there are only 3 possible responses:
+
+- `allow`: The access request is permitted to go forward.
+- `deny`: The access request is denied and MUST NOT be permitted to go forward.
+- `partial`: The access request is permitted to go foward provided the PEP can implement the provided residual policy. If the PEP cannot implement the residual policy the request MUST NOT be permitted to go forward.
+
+`residual`:
+: OPTIONAL. An object containing the residual policy (or filter definitions) to be implemented by the PEP. The residual policy MUST be provided if `type` is `partial`
+
+`context`:
+: OPTIONAL. An object containing additional information regarding the decision.
+
+### Residual / Filter definition
+
+The residual policy is described in terms of expressions. An expression consists of a JSON object with a single key containing the type of the expression. The value belonging to the key contains the content of the expression itself.
+
+#### Or Expression
+
+The `or` expression contains an array of expressions. It returns `true` if one or more of the given expressions evaluate to `true`.
+
+#### And Expression
+
+The `and` expression contains an array of expressions. It returns `true` if all of the given expressions evaluate to `true`.
+
+#### Not Expression
+
+The `not` expression contains a single expressions. It returns `true` if the given expressions evaluates to `false` and returns `false` if the given expression evaluates to `true`.
+
+#### OneOf Expression
+
+The `oneOf` expression contains an array of expressions. It returns `true` if exactly one of the given expressions evaluates to `true` and all other given expressions evaluate to false.
+
+#### Function Expression
+
+The `function` expression consists of an object describing a function to be evaluated. It contains the following fields:
+
+`name`:
+: REQUIRED. A string value that defines the function to be evaluated.
+
+`arguments`:
+: REQUIRED. An array containing the arguments to the function.
+
+Any function name can be used but it must be ensure that unique function names are used. It is recommended to use reverse dot notation for vendor specific functions.
+
+### Partial Evaluation Decision {#decision}
+The following are two non-normative example of a simple Decision:
+
+~~~ json
+{
+  "type": "partial",
+  "residual":
+    {
+      "or": [
+        {
+          "and": [
+            {
+              "function": {
+                "name": "equals",
+                "arguments": [
+                  {
+                    "function": {
+                      "name": "lower",
+                      "arguments": [
+                        {
+                          "value": "username",
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  },
+                  { "value": "John Doe",
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+~~~
+{: #decision-example title="Example partially evaluated decision"}
+
+
+~~~ json
+{
+  "type": "allow"
+  "context": {
+    "reason": "Subject is superuser"
+  }
+}
+~~~
+{: #decision-example title="Example full allow"}
+
+
+### Additional Context in a Response
+The partial evalaution API response may contain a `"context"` field which can be any JSON object.  The semantics of this context field are identical to that of the {{access-evaluation-response-context}}
 
 # Access Evaluations API {#access-evaluations-api}
 
