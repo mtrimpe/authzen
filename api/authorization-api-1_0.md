@@ -876,6 +876,8 @@ The Subject Search request is a 4-tuple constructed of three previously defined 
 `page`:
 : OPTIONAL. A page token for paged requests.
 
+The Subject Search Request MAY contain {{JSON-LD11}} keys starting with the `@`-symbol.
+
 ### Example (non-normative)
 
 The following payload defines a request for the subjects of type `user` that can perform the `can_read` action on the resource of type `account` and ID `123`.
@@ -1001,6 +1003,8 @@ The Resource Search request is a 4-tuple constructed of three previously defined
 `page`:
 : OPTIONAL. A page token for paged requests.
 
+The Resource Search Request MAY contain {{JSON-LD11}} keys starting with the `@`-symbol.
+
 ### Example (non-normative)
 
 The following payload defines a request for the resources of type `account` on which the subject of type `user` and ID `alice@acmecorp.com` can perform the `can_read` action.
@@ -1114,6 +1118,8 @@ The Action Search request is a 3-tuple constructed of three previously defined e
 
 `page`:
 : OPTIONAL. A page token for paged requests.
+
+The Action Search Request MAY contain {{JSON-LD11}} keys starting with the `@`-symbol.
 
 ### Example (non-normative)
 
