@@ -273,7 +273,7 @@ The following is a non-normative example of an action with additional properties
   }
 }
 ~~~
-{: #action-example title="Example Action with properties for extending a book loan."}
+{: #action-extend-loan-example title="Example Action with properties for extending a book loan."}
 
 ## Context {#context}
 The Context is the environment or context of the access evaluation request.
@@ -307,7 +307,7 @@ The following example of a Context provides a JSON Schema definition which can b
   "schema": "https://schema.example.com/access-request.schema.json"
 }
 ~~~
-{: #context-example title="Example Context with a reference to a JSON schema"}
+{: #context-schema-example title="Example Context with a reference to a JSON schema"}
 
 
 ## Decision {#decision}
