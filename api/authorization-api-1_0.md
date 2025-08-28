@@ -145,10 +145,10 @@ An attribute can be single-valued or multi-valued. It can be a primitive type (s
 
 Examples of subject attributes can include, but are not limited to:
 
-- Department,
-- Group memberships,
-- Device identifier,
-- IP Address.
+- department,
+- group memberships,
+- device identifier,
+- IP address.
 
 ### Examples (non-normative) {#subject-examples}
 
@@ -157,7 +157,7 @@ The following is a non-normative example of a minimal Subject:
 ~~~ json
 {
   "type": "user",
-  "id": "alice@acmecorp.com"
+  "id": "alice@example.com"
 }
 ~~~
 {: #subject-example title="Example Subject"}
@@ -167,7 +167,7 @@ The following is a non-normative example of a Subject which adds a string-valued
 ~~~ json
 {
   "type": "user",
-  "id": "alice@acmecorp.com",
+  "id": "alice@example.com",
   "properties": {
     "department": "Sales"
   }
@@ -180,7 +180,7 @@ The following is a non-normative example of a subject which adds IP address and 
 ~~~ json
 {
   "type": "user",
-  "id": "alice@acmecorp.com",
+  "id": "alice@example.com",
   "properties": {
     "ip_address": "172.217.22.14",
     "device_id": "8:65:ee:17:7e:0b"
@@ -190,7 +190,7 @@ The following is a non-normative example of a subject which adds IP address and 
 {: #subject-device-id-example title="Example Subject with IP Address and Device ID"}
 
 ## Resource {#resource}
-A Resource is the target of an access request. It is a JSON ({{RFC8259}}) object that is constructed similar to a Subject entity. It has the follow keys:
+A Resource is the target of an access request. It is a JSON ({{RFC8259}}) object that is constructed similar to a Subject entity. It has the following keys:
 
 `type`:
 : REQUIRED. A `string` value that specifies the type of the Resource.
@@ -276,7 +276,7 @@ The following is a non-normative example of an action with additional properties
 {: #action-extend-loan-example title="Example Action with properties for extending a book loan."}
 
 ## Context {#context}
-The Context is the environment or context of the access evaluation request.
+The Context represents the environment of the access evaluation request.
 
 Context is a JSON ({{RFC8259}}) object which can be used to express properties of the environment or context. 
 
@@ -321,7 +321,7 @@ Decision is a JSON ({{RFC8259}}) object that contains a REQUIRED `decision` key 
 `context`:
 : OPTIONAL. A JSON object which can convey additional information that can be used by the PEP as part of the decision enforcement process.
 
-In this specification, assuming the evaluation was successful, there are only 2 possible for the `decision`:
+In this specification, assuming the evaluation was successful, there are only two possible values for the `decision`:
 
 - `true`: The access request is permitted to go forward. If the PEP does not understand information in the `context` response object the PEP MAY choose to reject the decision.
 - `false`: The access request is denied and MUST NOT be permitted to go forward.
@@ -348,7 +348,7 @@ Examples include, but are not limited to:
 - etc.
 
 ### Examples (non-normative) {#decision-examples}
-The following are all non-normative examples of possible and valid contexts, provided to illustrate possible usages. The actual semantics and format of the `context` object is an implementation concern and out-of-scope of this specification.
+The following are all non-normative examples of possible and valid contexts, provided to illustrate possible usages. The actual semantics and format of the `context` object is an implementation concern and outside the scope of this specification.
 
 #### Non-normative Example 1: conveying decision Reasons
 The PDP may provide reasons to explain a decision. In the non-normative example below implementers return an HTTP error code and convey different reasons to administrators and end-users:
@@ -408,7 +408,7 @@ In the following non-normative example, the PDP requests a step-up authenticatio
 The Access Evaluation API defines the message exchange pattern between a client (PEP) and an authorization service (PDP) for executing a single access evaluation.
 
 ## The Access Evaluation API Request {#access-evaluation-request}
-The Access Evaluation request is an object constructed of four entities previously defined in the Information Model ({{information-model}}):
+The Access Evaluation request is an object consisting of four entities previously defined in the Information Model ({{information-model}}):
 
 `subject`:
 : REQUIRED. The subject (or principal) of type Subject
@@ -428,7 +428,7 @@ The Access Evaluation request is an object constructed of four entities previous
 {
   "subject": {
     "type": "user",
-    "id": "alice@acmecorp.com"
+    "id": "alice@example.com"
   },
   "resource": {
     "type": "account",
@@ -465,7 +465,7 @@ If an `evaluations` array is NOT present, the Access Evaluations Request behaves
 
 If an `evaluations` array IS present and contains one or more objects, these form distinct requests that the PDP will evaluate. These requests are independent from each other, and may be executed sequentially or in parallel, left to the discretion of each implementation.
 
-The top-level `subject`, `action`, `resource`, and `context` keys provide default values for their respective fields in `evaluations` array.  The top-level `subject`, `action` and `resource` keys MAY be omitted if the `evaluations` array IS present, contains one or more objects and every object in the `evaluations` array contains the respective given top-level key. This behavior is described in {{default-values}}.
+The top-level `subject`, `action`, `resource`, and `context` keys provide default values for their respective fields in the `evaluations` array.  The top-level `subject`, `action` and `resource` keys MAY be omitted if the `evaluations` array IS present, contains one or more objects and every object in the `evaluations` array contains the respective given top-level key. This behavior is described in {{default-values}}.
 
 The following is a non-normative example for specifying three requests, with no default values:
 
@@ -475,7 +475,7 @@ The following is a non-normative example for specifying three requests, with no 
     {
       "subject": {
         "type": "user",
-        "id": "alice@acmecorp.com"
+        "id": "alice@example.com"
       },
       "action": {
         "name": "can_read"
@@ -491,7 +491,7 @@ The following is a non-normative example for specifying three requests, with no 
     {
       "subject": {
         "type": "user",
-        "id": "alice@acmecorp.com"
+        "id": "alice@example.com"
       },
       "action": {
         "name": "can_read"
@@ -507,7 +507,7 @@ The following is a non-normative example for specifying three requests, with no 
     {
       "subject": {
         "type": "user",
-        "id": "alice@acmecorp.com"
+        "id": "alice@example.com"
       },
       "action": {
         "name": "can_read"
@@ -538,7 +538,7 @@ The following is a non-normative example for specifying three requests that refe
 {
   "subject": {
     "type": "user",
-    "id": "alice@acmecorp.com"
+    "id": "alice@example.com"
   },
   "context": {
     "time": "2024-05-31T15:22-07:00"
@@ -581,7 +581,7 @@ The following is a non-normative example for specifying three requests that refe
 {
   "subject": {
     "type": "user",
-    "id": "alice@acmecorp.com"
+    "id": "alice@example.com"
   },
   "context": {
     "time": "2024-05-31T15:22-07:00"
@@ -905,7 +905,7 @@ In addition, it is RECOMMENDED that a subject search is performed transitively, 
 
 ## The Subject Search API Request {#subject-search-request}
 
-The Subject Search request is a on object constructed of the following entities:
+The Subject Search request is an object consisting of the following entities:
 
 `subject`:
 : REQUIRED. The subject (or principal) of type Subject.  NOTE that the Subject type is REQUIRED but the Subject ID can be omitted, and if present, is IGNORED.
@@ -954,11 +954,11 @@ The response is a paged array of Subjects.
   "results": [
     {
       "type": "user",
-      "id": "alice@acmecorp.com"
+      "id": "alice@example.com"
     },
     {
       "type": "user",
-      "id": "bob@acmecorp.com"
+      "id": "bob@example.com"
     }
   ],
   "page": {
@@ -978,11 +978,11 @@ A response that needs to be split across page boundaries returns a non-empty `pa
   "results": [
     {
       "type": "user",
-      "id": "alice@acmecorp.com"
+      "id": "alice@example.com"
     },
     {
       "type": "user",
-      "id": "bob@acmecorp.com"
+      "id": "bob@example.com"
     }
   ],
   "page": {
@@ -1049,13 +1049,13 @@ The Resource Search request is an object consisting of the following entities:
 
 ### Example (non-normative)
 
-The following payload defines a request for the resources of type `account` on which the subject of type `user` and ID `alice@acmecorp.com` can perform the `can_read` action.
+The following payload defines a request for the resources of type `account` on which the subject of type `user` and ID `alice@example.com` can perform the `can_read` action.
 
 ~~~ json
 {
   "subject": {
     "type": "user",
-    "id": "alice@acmecorp.com"
+    "id": "alice@example.com"
   },
   "action": {
     "name": "can_read"
@@ -1119,7 +1119,7 @@ To retrieve the next page, provide `page.next_token` in the next request:
 {
   "subject": {
     "type": "user",
-    "id": "alice@acmecorp.com"
+    "id": "alice@example.com"
   },
   "action": {
     "name": "can_read"
@@ -1300,11 +1300,11 @@ The syntax and semantics of .well-known are defined in {{RFC8615}}. The well-kno
 
 ### Policy Decision Point Metadata Request {#pdp-metadata-access-request}
 
-A policy decision point metadata document MUST be queried using an HTTP GET request at the previously specified URL. The consumer of the metadata would make the following request when the resource identifier is https://pdp.mycompany.com:
+A policy decision point metadata document MUST be queried using an HTTP GET request at the previously specified URL. The consumer of the metadata would make the following request when the resource identifier is https://pdp.example.com:
 
 ~~~ http
 GET /.well-known/authzen-configuration HTTP/1.1
-Host: pdp.mycompany.com
+Host: pdp.example.com
 ~~~
 
 ### Policy Decision Point Metadata Response {#pdp-metadata-access-response}
@@ -1322,10 +1322,10 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "policy_decision_point": "https://pdp.mycompany.com",
-  "access_evaluation_endpoint": "https://pdp.mycompany.com/access/v1/evaluation",
-  "search_subject_endpoint": "https://pdp.mycompany.com/access/v1/search/subject",
-  "search_resource_endpoint": "https://pdp.mycompany.com/access/v1/search/resource"
+  "policy_decision_point": "https://pdp.example.com",
+  "access_evaluation_endpoint": "https://pdp.example.com/access/v1/evaluation",
+  "search_subject_endpoint": "https://pdp.example.com/access/v1/search/subject",
+  "search_resource_endpoint": "https://pdp.example.com/access/v1/search/resource"
 }
 ~~~
 
@@ -1350,14 +1350,14 @@ The following is a non-normative example of the HTTPS binding of the Access Eval
 
 ~~~ http
 POST /access/v1/evaluation HTTP/1.1
-Host: pdp.mycompany.com
+Host: pdp.example.com
 Authorization: Bearer <myoauthtoken>
 X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
 
 {
   "subject": {
     "type": "user",
-    "id": "alice@acmecorp.com"
+    "id": "alice@example.com"
   },
   "resource": {
     "type": "todo",
@@ -1396,14 +1396,14 @@ The following is a non-normative example of a the HTTPS binding of the Access Ev
 
 ~~~ http
 POST /access/v1/evaluations HTTP/1.1
-Host: pdp.mycompany.com
+Host: pdp.example.com
 Authorization: Bearer <myoauthtoken>
 X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
 
 {
   "subject": {
     "type": "user",
-    "id": "alice@acmecorp.com"
+    "id": "alice@example.com"
   },
   "context": {
     "time": "2024-05-31T15:22-07:00"
@@ -1480,7 +1480,7 @@ The following is a non-normative example of the HTTPS binding of the Subject Sea
 
 ~~~ http
 POST /access/v1/search/subject HTTP/1.1
-Host: pdp.mycompany.com
+Host: pdp.example.com
 Authorization: Bearer <myoauthtoken>
 X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
 
@@ -1513,11 +1513,11 @@ X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
   "results": [
     {
       "type": "user",
-      "id": "alice@acmecorp.com"
+      "id": "alice@example.com"
     },
     {
       "type": "user",
-      "id": "bob@acmecorp.com"
+      "id": "bob@example.com"
     }
   ],
   "page": {
@@ -1534,14 +1534,14 @@ The following is a non-normative example of the HTTPS binding of the Resource Se
 
 ~~~ http
 POST /access/v1/search/resource HTTP/1.1
-Host: pdp.mycompany.com
+Host: pdp.example.com
 Authorization: Bearer <myoauthtoken>
 X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
 
 {
   "subject": {
     "type": "user",
-    "id": "alice@acmecorp.com"
+    "id": "alice@example.com"
   },
   "action": {
     "name": "can_read"
@@ -1588,14 +1588,14 @@ The following is a non-normative example of the HTTPS binding of the Action Sear
 
 ~~~ http
 POST /access/v1/search/action HTTP/1.1
-Host: pdp.mycompany.com
+Host: pdp.example.com
 Authorization: Bearer <myoauthtoken>
 X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
 
 {
   "subject": {
     "type": "user",
-    "id": "alice@acmecorp.com"
+    "id": "alice@example.com"
   },
   "resource": {
     "type": "account",
@@ -1603,7 +1603,7 @@ X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
   },
   "context": {
     "time": "2024-10-26T01:22-07:00"
-  },
+  }
 }
 ~~~
 {: #example-action-search-request title="Example of an HTTPS Action Search Request"}
