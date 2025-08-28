@@ -120,7 +120,7 @@ The Search APIs provide lists of resources, subjects or actions which would be a
 # API Version
 This document describes the API version 1.0. Any updates to this API through subsequent revisions of this document or other documents MAY augment this API, but MUST NOT modify the API described here. Augmentation MAY include additional API methods or additional parameters to existing API methods, additional authorization mechanisms, or additional optional headers in API requests. All API methods for version 1.0 MUST be immediately preceded by the relative URL path `/v1/`.
 
-# Information Model
+# Information Model {#information-model}
 The information model for requests and responses include the following entities: Subject, Action, Resource, Context, and Decision. These are all defined below.
 
 ## Subject {#subject}
@@ -135,9 +135,24 @@ A Subject is a JSON ({{RFC8259}}) object that contains two REQUIRED keys, `type`
 : REQUIRED. A `string` value containing the unique identifier of the Subject, scoped to the `type`.
 
 `properties`:
-: OPTIONAL. A JSON object containing any number of key-value pairs, which can be used to express additional properties of a Subject.
+: OPTIONAL. A JSON object which can be used to express additional properties of a Subject.
 
-The following is a non-normative example of a Subject:
+
+### Subject Properties {#subject-properties}
+Many authorization systems are stateless, and expect the client (PEP) to pass in any properties or attributes that are expected to be used in the evaluation of the authorization policy. To satisfy this requirement, Subjects MAY include zero or more additional attributes as key-value pairs, under the `properties` object.
+
+An attribute can be single-valued or multi-valued. It can be a primitive type (string, boolean, number) or a complex type such as a JSON object or JSON array.
+
+Examples of subject attributes can include, but are not limited to:
+
+- Department,
+- Group memberships,
+- Device identifier,
+- IP Address.
+
+### Examples (non-normative) {#subject-examples}
+
+The following is a non-normative example of a minimal Subject:
 
 ~~~ json
 {
@@ -146,11 +161,6 @@ The following is a non-normative example of a Subject:
 }
 ~~~
 {: #subject-example title="Example Subject"}
-
-### Subject Properties {#subject-properties}
-Many authorization systems are stateless, and expect the client (PEP) to pass in any properties or attributes that are expected to be used in the evaluation of the authorization policy. To satisfy this requirement, Subjects MAY include zero or more additional attributes as key-value pairs, under the `properties` object.
-
-An attribute can be single-valued or multi-valued. It can be a primitive type (string, boolean, number) or a complex type such as a JSON object or JSON array.
 
 The following is a non-normative example of a Subject which adds a string-valued `department` property:
 
@@ -165,43 +175,19 @@ The following is a non-normative example of a Subject which adds a string-valued
 ~~~
 {: #subject-department-example title="Example Subject with Additional Property"}
 
-To increase interoperability, a few common properties are specified below:
-
-#### IP Address {#subject-ip-address}
-The IP Address of the Subject, identified by an `ip_address` field, whose value is a textual representation of an IP Address, as defined in `Textual Conventions for Internet Network Addresses` {{RFC4001}}.
-
-The following is a non-normative example of a subject which adds the `ip_address` property:
+The following is a non-normative example of a subject which adds IP address and device identifier properties:
 
 ~~~ json
 {
   "type": "user",
   "id": "alice@acmecorp.com",
   "properties": {
-    "department": "Sales",
-    "ip_address": "172.217.22.14"
-  }
-}
-~~~
-{: #subject-ip-address-example title="Example Subject with IP Address"}
-
-
-#### Device ID {#subject-device-id}
-The Device Identifier of the Subject, identified by a `device_id` field, whose value is a string representation of the device identifier.
-
-The following is a non-normative example of a subject which adds the `device_id` property:
-
-~~~ json
-{
-  "type": "user",
-  "id": "alice@acmecorp.com",
-  "properties": {
-    "department": "Sales",
     "ip_address": "172.217.22.14",
     "device_id": "8:65:ee:17:7e:0b"
   }
 }
 ~~~
-{: #subject-device-id-example title="Example Subject with Device ID"}
+{: #subject-device-id-example title="Example Subject with IP Address and Device ID"}
 
 ## Resource {#resource}
 A Resource is the target of an access request. It is a JSON ({{RFC8259}}) object that is constructed similar to a Subject entity. It has the follow keys:
@@ -213,9 +199,15 @@ A Resource is the target of an access request. It is a JSON ({{RFC8259}}) object
 : REQUIRED. A `string` value containing the unique identifier of the Resource, scoped to the `type`.
 
 `properties`:
-: OPTIONAL. A JSON object containing any number of key-value pairs, which can be used to express additional properties of a Resource.
+: OPTIONAL. A JSON object which can be used to express additional properties of a Resource.
 
-### Examples (non-normative)
+### Resource properties {#resource-properties}
+
+Similarly to the Subject properties, the PEP can also provide attributes for the Resource in the properties field.
+
+Such attributes can include, but are not limited to, attributes of the resource used in access evaluations or metadata about the resource.
+
+### Examples (non-normative) {#resource-examples}
 
 The following is a non-normative example of a Resource with a `type` and a simple `id`:
 
@@ -252,7 +244,15 @@ Action is a JSON ({{RFC8259}}) object that contains a REQUIRED `name` key with a
 : REQUIRED. The name of the Action.
 
 `properties`:
-: OPTIONAL. A JSON object containing any number of key-value pairs, which can be used to express additional properties of an Action.
+: OPTIONAL. A JSON object which can be used to express additional properties of an Action.
+
+### Action Properties {#action-properties}
+
+Similarly to the Subject and Resource properties, the PEP can also provide attributes for the Action in the properties field.
+
+Such attributes can include, but are not limited to, parameters of the action that is being requested.
+
+### Examples (non-normative) {#action-examples}
 
 The following is a non-normative example of an action:
 
@@ -263,8 +263,31 @@ The following is a non-normative example of an action:
 ~~~
 {: #action-example title="Example Action"}
 
+The following is a non-normative example of an action with additional properties:
+
+~~~ json
+{
+  "name": "extend-loan",
+  "properties": {
+    "period": "2W"
+  }
+}
+~~~
+{: #action-example title="Example Action with properties for extending a book loan."}
+
 ## Context {#context}
-The Context object is a set of attributes that represent environmental or contextual data about the request such as time of day. It is a JSON ({{RFC8259}}) object.
+The Context is the environment or context of the access evaluation request.
+
+Context is a JSON ({{RFC8259}}) object which can be used to express properties of the environment or context. 
+
+Examples of context attributes can include, but are not limited to:
+
+- The time of day,
+- Location from which the request was received,
+- Capabilities of the PEP,
+- JSON Schema or JSON-LD definitions for the request.
+
+### Examples (non-normative) {#context-examples}
 
 The following is a non-normative example of a Context:
 
@@ -275,65 +298,35 @@ The following is a non-normative example of a Context:
 ~~~
 {: #context-example title="Example Context"}
 
-# Access Evaluation API {#access-evaluation-api}
 
-The Access Evaluation API defines the message exchange pattern between a client (PEP) and an authorization service (PDP) for executing a single access evaluation.
-
-## The Access Evaluation API Request {#access-evaluation-request}
-The Access Evaluation request is a 4-tuple constructed of the four previously defined entities:
-
-`subject`:
-: REQUIRED. The subject (or principal) of type Subject
-
-`action`:
-: REQUIRED. The action (or verb) of type Action.
-
-`resource`:
-: REQUIRED. The resource of type Resource.
-
-`context`:
-: OPTIONAL. The context (or environment) of type Context.
-
-### Example (non-normative)
+The following example of a Context provides a JSON Schema definition which can be used to parse and validate the AuthZEN request:
 
 ~~~ json
 {
-  "subject": {
-    "type": "user",
-    "id": "alice@acmecorp.com"
-  },
-  "resource": {
-    "type": "account",
-    "id": "123"
-  },
-  "action": {
-    "name": "can_read",
-    "properties": {
-      "method": "GET"
-    }
-  },
-  "context": {
-    "time": "1985-10-26T01:22-07:00"
-  }
+  "time": "1985-10-26T01:22-07:00",
+  "schema": "https://schema.example.com/access-request.schema.json"
 }
 ~~~
-{: #request-example title="Example Request"}
+{: #context-example title="Example Context with a reference to a JSON schema"}
 
-## The Access Evaluation API Response {#access-evaluation-response}
-The simplest form of a response is simply a boolean representing a Decision, indicated by a `"decision"` field. 
+
+## Decision {#decision}
+A Decision is the result of the evaluation of an access request. It provides the information required for the PEP to enforce the decision.
+
+Decision is a JSON ({{RFC8259}}) object that contains a REQUIRED `decision` key with a `boolean` value, and an OPTIONAL `context` key with a JSON object value.
 
 `decision`:
 : REQUIRED. A boolean value that specifies whether the Decision is to allow or deny the operation.
 
-In this specification, assuming the evaluation was successful, there are only 2 possible responses:
+`context`:
+: OPTIONAL. A JSON object which can convey additional information that can be used by the PEP as part of the decision enforcement process.
 
-- `true`: The access request is permitted to go forward.
+In this specification, assuming the evaluation was successful, there are only 2 possible for the `decision`:
+
+- `true`: The access request is permitted to go forward. If the PEP does not understand information in the `context` response object the PEP MAY choose to reject the decision.
 - `false`: The access request is denied and MUST NOT be permitted to go forward.
 
-The response object MUST contain this boolean-valued Decision key.
-
-### Access Evaluation Decision {#decision}
-The following is a non-normative example of a simple Decision:
+The following is a non-normative example of a minimal Decision:
 
 ~~~ json
 {
@@ -342,7 +335,7 @@ The following is a non-normative example of a simple Decision:
 ~~~
 {: #decision-example title="Example Decision"}
 
-### Additional Context in a Response
+### Decision Context {#decision-context}
 In addition to a `"decision"`, a response MAY contain a `"context"` field which can be any JSON object. This context can convey additional information that can be used by the PEP as part of the decision enforcement process.
 
 Examples include, but are not limited to:
@@ -354,8 +347,8 @@ Examples include, but are not limited to:
 - Environmental information,
 - etc.
 
-### Example Contexts
-The following are all non-normative examples of possible and valid contexts, provided here just to illustrate possible usages. Again, the actual semantics and format of the `context` object is an implementation concern and out-of-scope of this specification; these are mere non-normative examples.
+### Examples (non-normative) {#decision-examples}
+The following are all non-normative examples of possible and valid contexts, provided to illustrate possible usages. The actual semantics and format of the `context` object is an implementation concern and out-of-scope of this specification.
 
 #### Non-normative Example 1: conveying decision Reasons
 The PDP may provide reasons to explain a decision. In the non-normative example below implementers return an HTTP error code and convey different reasons to administrators and end-users:
@@ -410,7 +403,53 @@ In the following non-normative example, the PDP requests a step-up authenticatio
 ~~~
 {: #response-with-step-up-example title="Non-normative Example Response with a step-up request Context"}
 
-If the PEP does not understand information in the `context` response object in the event of a `decision: true`, the PEP MAY choose to reject the decision.
+# Access Evaluation API {#access-evaluation-api}
+
+The Access Evaluation API defines the message exchange pattern between a client (PEP) and an authorization service (PDP) for executing a single access evaluation.
+
+## The Access Evaluation API Request {#access-evaluation-request}
+The Access Evaluation request is an object constructed of four entities previously defined in the Information Model ({{information-model}}):
+
+`subject`:
+: REQUIRED. The subject (or principal) of type Subject
+
+`action`:
+: REQUIRED. The action (or verb) of type Action.
+
+`resource`:
+: REQUIRED. The resource of type Resource.
+
+`context`:
+: OPTIONAL. The context (or environment) of type Context.
+
+### Example (non-normative)
+
+~~~ json
+{
+  "subject": {
+    "type": "user",
+    "id": "alice@acmecorp.com"
+  },
+  "resource": {
+    "type": "account",
+    "id": "123"
+  },
+  "action": {
+    "name": "can_read",
+    "properties": {
+      "method": "GET"
+    }
+  },
+  "context": {
+    "time": "1985-10-26T01:22-07:00"
+  }
+}
+~~~
+{: #request-example title="Example Request"}
+
+## The Access Evaluation API Response {#access-evaluation-response}
+
+The response of the Access Evaluation API consists of the Decision entity as defined in the Information Model ({{information-model}}).
 
 # Access Evaluations API {#access-evaluations-api}
 
@@ -418,9 +457,9 @@ The Access Evaluations API defines the message exchange pattern between a client
 
 ## The Access Evaluations API Request {#access-evaluations-request}
 
-The Access Evaluation API Request builds on the information model presented in {{information-model}} and the 4-tuple defined in the Access Evaluation Request ({{access-evaluation-request}}).
+The Access Evaluation API Request builds on the information model presented in {{information-model}} and the object defined in the Access Evaluation Request ({{access-evaluation-request}}).
 
-To send multiple access evaluation requests in a single message, the caller MAY add an `evaluations` key to the request. The `evaluations` key is an array which contains a list of JSON objects, each typed as the 4-tuple as defined in the Access Evaluation Request ({{access-evaluation-request}}), and specifying a discrete request.
+To send multiple access evaluation requests in a single message, the caller MAY add an `evaluations` key to the request. The `evaluations` key is an array which contains a list of JSON objects, each typed as the object as defined in the Access Evaluation Request ({{access-evaluation-request}}), and specifying a discrete request.
 
 If an `evaluations` array is NOT present, the Access Evaluations Request behaves in a backwards-compatible manner with the (single) Access Evaluation API Request ({{access-evaluation-request}}).
 
@@ -487,11 +526,11 @@ The following is a non-normative example for specifying three requests, with no 
 
 ### Default values
 
-While the example above provides the most flexibility in specifying distinct values in each request for every evaluation, it is common for boxcarred requests to share one or more values of the 4-tuple. For example, evaluations MAY all refer to a single subject, and/or have the same contextual (environmental) attributes.
+While the example above provides the most flexibility in specifying distinct values in each request for every evaluation, it is common for boxcarred requests to share one or more values of the evaluation request. For example, evaluations MAY all refer to a single subject, and/or have the same contextual (environmental) attributes.
 
 Default values offer a more compact syntax that avoids over-duplication of request data.
 
-If any of the top-level `subject`, `action`, `resource`, and `context` keys are provided, the value of the top-level key is treated as the default value for the 4-tuples specified in the `evaluations` array. If a top-level key is specified in the 4-tuples present in the `evaluations` array then the value of that will take precedence over these default values. If the `subject`, `action` or `resource` is omitted in the `evaluations` array then a default value for the key MUST be provided in the top-level keys.
+If any of the top-level `subject`, `action`, `resource`, and `context` keys are provided, the value of the top-level key is treated as the default value for the evaluation specified in the `evaluations` array. If a top-level key is specified in the evaluation request present in the `evaluations` array then the value of that will take precedence over these default values. If the `subject`, `action` or `resource` is omitted in the `evaluations` array then a default value for the key MUST be provided in the top-level keys.
 
 The following is a non-normative example for specifying three requests that refer to a single subject and context:
 
@@ -787,7 +826,7 @@ Response:
 
 ## Access Evaluations API Response {#access-evaluations-response}
 
-Like the request format, the Access Evaluations Response format for an Access Evaluations Request adds an `evaluations` array that lists the decisions in the same order they were provided in the `evaluations` array in the request. Each value of the evaluations array is typed as an Access Evaluation Response ({{access-evaluation-response}}).
+Like the request format, the Access Evaluations Response format for an Access Evaluations Request adds an `evaluations` array that lists the decisions in the same order they were provided in the `evaluations` array in the request. Each value of the evaluations array is typed as a Decision as defined in the Information Model ({{information-model}}).
 
 In case the `evaluations` array is present, it is RECOMMENDED that the `decision` key of the response will be omitted. If present, it can be ignored by the caller.
 
@@ -866,7 +905,7 @@ In addition, it is RECOMMENDED that a subject search is performed transitively, 
 
 ## The Subject Search API Request {#subject-search-request}
 
-The Subject Search request is a 4-tuple constructed of three previously defined entities:
+The Subject Search request is a on object constructed of the following entities:
 
 `subject`:
 : REQUIRED. The subject (or principal) of type Subject.  NOTE that the Subject type is REQUIRED but the Subject ID can be omitted, and if present, is IGNORED.
@@ -991,7 +1030,7 @@ In addition, it is RECOMMENDED that a resource search is performed transitively,
 
 ## The Resource Search API Request {#resource-search-request}
 
-The Resource Search request is a 4-tuple constructed of three previously defined entities:
+The Resource Search request is an object consisting of the following entities:
 
 `subject`:
 : REQUIRED. The subject (or principal) of type Subject.
@@ -1108,7 +1147,7 @@ While the evaluation of a search is implementation-specific, it is expected that
 
 ## The Action Search API Request {#action-search-request}
 
-The Action Search request is a 3-tuple constructed of three previously defined entities:
+The Action Search request is an object consisting of the following entities:
 
 `subject`:
 : REQUIRED. The subject (or principal) of type Subject.
