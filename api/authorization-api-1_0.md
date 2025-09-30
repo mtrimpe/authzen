@@ -125,7 +125,7 @@ The information model for requests and responses include the following entities:
 ## Subject {#subject}
 A Subject is the user or machine principal about whom the Authorization API is being invoked. The Subject may be requesting access at the time the Authorization API is invoked.
 
-A Subject is a JSON object ({{Section 4 of RFC8259}}) that contains two REQUIRED keys, `type` and `id`, which have a `string` value, and an OPTIONAL key, `properties`, with a value of a JSON object.
+A Subject is an object that contains two REQUIRED keys, `type` and `id`, which have a `string` value, and an OPTIONAL key, `properties`, with a value of an object.
 
 `type`:
 : REQUIRED. A `string` value that specifies the type of the Subject.
@@ -134,11 +134,11 @@ A Subject is a JSON object ({{Section 4 of RFC8259}}) that contains two REQUIRED
 : REQUIRED. A `string` value containing the unique identifier of the Subject, scoped to the `type`.
 
 `properties`:
-: OPTIONAL. A JSON object which can be used to express additional attributes of a Subject.
+: OPTIONAL. An object which can be used to express additional attributes of a Subject.
 
 
 ### Subject Properties {#subject-properties}
-Many authorization systems are stateless, and expect the client (PEP) to pass in all relevant attributes used in the evaluation of the authorization policy. To satisfy this requirement, Subjects MAY include additional attributes as key-value pairs, under the `properties` object. A property can contain any JSON value as described in {{Section 3 of RFC8259}}).
+Many authorization systems are stateless, and expect the client (PEP) to pass in all relevant attributes used in the evaluation of the authorization policy. To satisfy this requirement, Subjects MAY include additional attributes as key-value pairs, under the `properties` object. A property can contain both simple values, such as strings, numbers, booleans and nulls, and complex values, such as arrays and objects.
 
 Examples of subject attributes can include, but are not limited to:
 
@@ -187,7 +187,7 @@ The following is a non-normative example of a subject which adds IP address and 
 {: #subject-device-id-example title="Example Subject with IP Address and Device ID"}
 
 ## Resource {#resource}
-A Resource is the target of an access request. It is a JSON object ({{Section 4 of RFC8259}}) that is constructed similar to a Subject entity. It has the following keys:
+A Resource is the target of an access request. It is an object that is constructed similar to a Subject entity. It has the following keys:
 
 `type`:
 : REQUIRED. A `string` value that specifies the type of the Resource.
@@ -196,7 +196,7 @@ A Resource is the target of an access request. It is a JSON object ({{Section 4 
 : REQUIRED. A `string` value containing the unique identifier of the Resource, scoped to the `type`.
 
 `properties`:
-: OPTIONAL. A JSON object which can be used to express additional attributes of a Resource.
+: OPTIONAL. An object which can be used to express additional attributes of a Resource.
 
 ### Resource Properties {#resource-properties}
 
@@ -216,7 +216,7 @@ The following is a non-normative example of a Resource with a `type` and a simpl
 ~~~
 {: #resource-example title="Example Resource"}
 
-The following is a non-normative example of a Resource containing a `library_record` property, that is itself a JSON object:
+The following is a non-normative example of a Resource containing a `library_record` property, that is itself an object:
 
 ~~~ json
 {
@@ -235,13 +235,13 @@ The following is a non-normative example of a Resource containing a `library_rec
 ## Action {#action}
 An Action is the type of access that the requester intends to perform.
 
-Action is a JSON object ({{Section 4 of RFC8259}}) that contains a REQUIRED `name` key with a `string` value, and an OPTIONAL `properties` key with a JSON object value.
+Action is an object that contains a REQUIRED `name` key with a `string` value, and an OPTIONAL `properties` key with an object value.
 
 `name`:
 : REQUIRED. The name of the Action.
 
 `properties`:
-: OPTIONAL. A JSON object which can be used to express additional attributes of an Action.
+: OPTIONAL. An object which can be used to express additional attributes of an Action.
 
 ### Action Properties {#action-properties}
 
@@ -275,7 +275,7 @@ The following is a non-normative example of an action with additional properties
 ## Context {#context}
 The Context represents the environment of the access evaluation request.
 
-Context is a JSON object ({{Section 4 of RFC8259}}) which can be used to express attributes of the environment. 
+Context is an object which can be used to express attributes of the environment. 
 
 Examples of context attributes can include, but are not limited to:
 
@@ -310,13 +310,13 @@ The following example of a Context provides a JSON Schema definition which can b
 ## Decision {#decision}
 A Decision is the result of the evaluation of an access request. It provides the information required for the PEP to enforce the decision.
 
-Decision is a JSON object ({{Section 4 of RFC8259}}) that contains a REQUIRED `decision` key with a `boolean` value, and an OPTIONAL `context` key with a JSON object value.
+Decision is an object that contains a REQUIRED `decision` key with a `boolean` value, and an OPTIONAL `context` key with an object value.
 
 `decision`:
 : REQUIRED. A boolean value that specifies whether the Decision is to allow or deny the operation.
 
 `context`:
-: OPTIONAL. A JSON object which can convey additional information that can be used by the PEP as part of the decision enforcement process.
+: OPTIONAL. An object which can convey additional information that can be used by the PEP as part of the decision enforcement process.
 
 In this specification, assuming the evaluation was successful, there are only two possible values for the `decision`:
 
@@ -333,7 +333,7 @@ The following is a non-normative example of a minimal Decision:
 {: #decision-example title="Example Decision"}
 
 ### Decision Context {#decision-context}
-In addition to a `decision`, a response MAY contain a `context` field which can be any JSON object. This context can convey additional information that can be used by the PEP as part of the decision enforcement process.
+In addition to a `decision`, a response MAY contain a `context` field which contains an object. This context can convey additional information that can be used by the PEP as part of the decision enforcement process.
 
 Examples include, but are not limited to:
 
@@ -456,7 +456,7 @@ The Access Evaluations API defines the message exchange pattern between a client
 
 The Access Evaluation API Request builds on the information model presented in {{information-model}} and the object defined in the Access Evaluation Request ({{access-evaluation-request}}).
 
-To send multiple access evaluation requests in a single message, the caller MAY add an `evaluations` key to the request. The `evaluations` key is an array which contains a list of JSON objects, each typed as the object as defined in the Access Evaluation Request ({{access-evaluation-request}}), and specifying a discrete request.
+To send multiple access evaluation requests in a single message, the caller MAY add an `evaluations` key to the request. The `evaluations` key is an array which contains a list of objects, each typed as the object as defined in the Access Evaluation Request ({{access-evaluation-request}}), and specifying a discrete request.
 
 If an `evaluations` array is NOT present or is empty, the Access Evaluations Request behaves in a backwards-compatible manner with the (single) Access Evaluation API Request ({{access-evaluation-request}}).
 
@@ -614,7 +614,7 @@ The following is a non-normative example for specifying three requests that refe
 
 ### Evaluations options
 
-The `evaluations` request payload includes an OPTIONAL `options` key, with a value that is a JSON object.
+The `evaluations` request payload includes an OPTIONAL `options` key, with a value that is an object.
 
 This provides a general-purpose mechanism for providing caller-supplied metadata on how the request is to be executed.
 
@@ -1314,7 +1314,9 @@ Host: pdp.example.com
 
 ### Policy Decision Point Metadata Response {#pdp-metadata-access-response}
 
-The response is a set of metadata parameters about the protected resource's configuration. A successful response MUST use the `200 OK HTTP` status code and return a JSON object using the `application/json` content type that contains a set of metadata parameters as its members that are a subset of the metadata parameters defined in {{pdp-metadata-data-endpoint}}. Additional metadata parameters MAY be defined and used; any metadata parameters that are not understood MUST be ignored.
+The response is a set of metadata parameters about the protected resource's configuration. A successful response MUST use the HTTP status code `200` and return a JSON object using the `application/json` content type that contains a set of metadata parameters as its members that are a subset of the metadata parameters defined in {{pdp-metadata-data-endpoint}}. 
+##TODO Should point to registry instead!
+Additional metadata parameters MAY be defined and used; any metadata parameters that are not understood MUST be ignored.
 
 Parameters with multiple values are represented as JSON arrays. Parameters with zero values MUST be omitted from the response.
 
@@ -1382,7 +1384,7 @@ X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
 {: #example-access-evaluation-request title="Example of an HTTPS Access Evaluation Request"}
 
 ### HTTPS Access Evaluation Response
-The success response to an Access Evaluation Request is an Access Evaluation Response. It is an HTTPS response with a `status` code of `200`, and `content-type` of `application/json`. Its body is a JSON object that contains the Access Evaluation Response, as defined in {{access-evaluation-response}}.
+The success response to an Access Evaluation Request is an Access Evaluation Response. It is an HTTPS response with an HTTP status code of `200`, and `Content-Type` of `application/json`. Its body is a JSON object that contains the Access Evaluation Response, as defined in {{access-evaluation-response}}.
 
 Following is a non-normative example of an HTTPS Access Evaluation Response:
 
@@ -1450,7 +1452,7 @@ X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
 {: #example-access-evaluations-request title="Example of an HTTPS Access Evaluations Request"}
 
 ### HTTPS Access Evaluations Response
-The success response to an Access Evaluations Request is an Access Evaluations Response. It is an HTTPS response with a `status` code of `200`, and `content-type` of `application/json`. Its body is a JSON object that contains the Access Evaluations Response, as defined in {{access-evaluations-response}}.
+The success response to an Access Evaluations Request is an Access Evaluations Response. It is an HTTPS response with an HTTP status code of `200`, and `Content-Type` of `application/json`. Its body is a JSON object that contains the Access Evaluations Response, as defined in {{access-evaluations-response}}.
 
 The following is a non-normative example of an HTTPS Access Evaluations Response:
 
@@ -1514,7 +1516,7 @@ X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
 {: #example-subject-search-request title="Example of an HTTPS Subject Search Request"}
 
 ### HTTPS Subject Search Response
-The success response to a Subject Search Request is a Subject Search Response. It is an HTTPS response with a `status` code of `200`, and `content-type` of `application/json`. Its body is a JSON object that contains the Subject Search Response, as defined in {{subject-search-response}}.
+The success response to a Subject Search Request is a Subject Search Response. It is an HTTPS response with an HTTP status code of `200`, and `Content-Type` of `application/json`. Its body is a JSON object that contains the Subject Search Response, as defined in {{subject-search-response}}.
 
 The following is a non-normative example of an HTTPS Subject Search Response:
 
@@ -1572,7 +1574,7 @@ X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
 {: #example-resource-search-request title="Example of an HTTPS Resource Search Request"}
 
 ### HTTPS Resource Search Response
-The success response to a Resource Search Request is a Resource Search Response. It is an HTTPS response with a `status` code of `200`, and `content-type` of `application/json`. Its body is a JSON object that contains the Resource Search Response, as defined in {{resource-search-response}}.
+The success response to a Resource Search Request is a Resource Search Response. It is an HTTPS response with an HTTP status code of `200`, and `Content-Type` of `application/json`. Its body is a JSON object that contains the Resource Search Response, as defined in {{resource-search-response}}.
 
 The following is a non-normative example of an HTTPS Resource Search Response:
 
@@ -1630,7 +1632,7 @@ X-Request-ID: bfe9eb29-ab87-4ca3-be83-a1d5d8305716
 {: #example-action-search-request title="Example of an HTTPS Action Search Request"}
 
 ### HTTPS Action Search Response
-The success response to an Action Search Request is an Action Search Response. It is an HTTPS response with a `status` code of `200`, and `content-type` of `application/json`. Its body is a JSON object that contains the Action Search Response, as defined in {{action-search-response}}.
+The success response to an Action Search Request is an Action Search Response. It is an HTTPS response with an HTTP status code of `200`, and `Content-Type` of `application/json`. Its body is a JSON object that contains the Action Search Response, as defined in {{action-search-response}}.
 
 The following is a non-normative example of an HTTPS Action Search Response:
 
